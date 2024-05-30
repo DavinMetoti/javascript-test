@@ -1,102 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beam Analysis Plot</title>
-</head>
-<body>
-    <form>
-        <table>
-            <tr>
-                <td>Condition</td>
-                <td>
-                    <select name="condition" id="condition">
-                        <option value="simply-supported">Simply Supported</option>
-                        <option value="two-span-unequal">Two Span Unequal</option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>Load Force (w)</td>
-                <td><input type="text" id="w"> kN/m</td>
-            </tr>
-            <tr>
-                <td>Primary Span (L1)</td>
-                <td><input type="text" id="primarySpan" value="4"> m</td>
-            </tr>
-            <tr>
-                <td>Secondary Span (L2)</td>
-                <td><input type="text" id="secondarySpan" value=""> m</td>
-            </tr>
-            <tr>
-                <td colspan="2"><hr></td>
-            </tr>
-            <tr>
-                <td>j2</td>
-                <td><input type="text" id="j2" value="2"></td>
-            </tr>
-            <tr>
-                <td>Bending Stiffnes (EI)</td>
-                <td><input type="text" id="EI" value="3150000000000"> Nmm<sup>2</sup></td>
-            </tr>
 
-            <tr>
-                <td colspan="2"><hr></td>
-            </tr>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Beam Analysis Plot</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.1/css/bootstrap.min.css"
+            integrity="sha512-Ez0cGzNzHR1tYAv56860NLspgUGuQw16GiOOp/I2LuTmpSK9xDXlgJz3XN4cnpXWDmkNBKXR/VDMTCnAaEooxA=="
+            crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+    </head>
 
-            <tr>
-                <td colspan="2" style="text-align: center;">
-                    <button type="button" id="calculate">Calculate</button>
-                </td>
-            </tr>
-        </table>
-    </form>
-    <canvas id="deflection_plot"></canvas>
-    <canvas id="shear_force_plot"></canvas>
-    <canvas id="bending_moment_plot"></canvas>
+    <body>
+        <form>
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card o-hidden border-0">
+                            <div class="card-body p-0">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="p-3">
+                                            <div class="text-left">
+                                                <h1 class="h4 text-gray-900 mb-4">Inputs</h1>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <div class="form-group mb-3">
+                                                        <label for="condition">Condition</label>
+                                                        <select name="condition" id="condition" class="form-select">
+                                                            <option value="simply-supported">Simply Supported</option>
+                                                            <option value="two-span-unequal">Two Span Unequal</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="form-group mb-3">
+                                                        <label for="w">Load Force (w)</label>
+                                                        <input type="number" id="w" class="form-control"
+                                                            placeholder="kN/m">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-group mb-3">
+                                                        <label for="primarySpan">Primary Span (L1)</label>
+                                                        <input type="number" id="primarySpan" value="4"
+                                                            class="form-control" placeholder="m">
+                                                    </div>
+                                                </div>
+                                                <div class="col-6">
+                                                    <div class="form-group mb-3">
+                                                        <label for="secondarySpan">Secondary Span (L2)</label>
+                                                        <input type="number" id="secondarySpan" value=""
+                                                            class="form-control" placeholder="m">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <div class="form-group mb-3">
+                                                <label for="j2">j2</label>
+                                                <input type="number" id="j2" value="2" class="form-control">
+                                            </div>
+                                            <div class="form-group mb-3">
+                                                <label for="EI">Bending Stiffness (EI)</label>
+                                                <input type="number" id="EI" value="3150000000000" class="form-control"
+                                                    placeholder="Nmm&#178;">
+                                            </div>
+                                            <button type="button" id="calculate"
+                                                class="btn btn-primary w-100">Calculate</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-    <script src="js/beam-analysis.js"></script>
-    <script src="js/analysis-plotter.js"></script>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card o-hidden border-0">
+                            <div class="card-body p-0">
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <div class="p-3">
+                                            <div class="text-left">
+                                                <h1 class="h4 text-gray-900 mb-4">Plot</h1>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label for="deflection_plot">Deflection</label>
+                                                <canvas id="deflection_plot"></canvas>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label for="shear_force_plot">Shear Force</label>
+                                                <canvas id="shear_force_plot"></canvas>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label for="bending_moment_plot">Bending Moment</label>
+                                                <canvas id="bending_moment_plot"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-    <script>
-        /**
-         * Get float value of specified field
-         */
-        function floatVal(id) {
-            return parseFloat(
-                document.getElementById(id).value
-            );
-        }
+            </div>
+        </form>
+        <script src="js/beam-analysis.js"></script>
+        <script src="js/analysis-plotter.js"></script>
+    </body>
 
-        function stringVal(id) {
-            return document.getElementById(id).value;
-        }
-
-        document.getElementById('calculate').addEventListener('click', function(e) {
-            var beam = new Beam();
-
-            beam.primarySpan    = floatVal('primarySpan');
-            beam.secondarySpan  = floatVal('secondarySpan');
-            beam.material       = new Material('No Name', {
-                EI : floatVal('EI')
-            });
-
-            var plotter = {
-                deflection      : new AnalysisPlotter('deflection_plot'),
-                shearForce      : new AnalysisPlotter('shear_force_plot'),
-                bendingMoment   : new AnalysisPlotter('bending_moment_plot')
-            }
-
-            var beamAnalysis        = new BeamAnalysis();
-            var deflectionData      = beamAnalysis.getDeflection(beam, floatVal('w'), stringVal('condition'));
-            var bendingMomentData   = beamAnalysis.getBendingMoment(beam, floatVal('w'), stringVal('condition'));
-            var shearForceData      = beamAnalysis.getShearForce(beam, floatVal('w'), stringVal('condition'));
-
-            plotter.deflection.plot(deflectionData);
-            plotter.shearForce.plot(shearForceData);
-            plotter.bendingMoment.plot(bendingMomentData);
-        });
-    </script>
-</body>
 </html>

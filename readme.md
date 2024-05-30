@@ -6,7 +6,7 @@
 
 ### Tasks
 
- * Cromplete the `BeamAnalysis.analyzer` sub-class in `js/beam-analysis.js` to calculate the forces
+ * Complete the `BeamAnalysis.analyzer` sub-class in `js/beam-analysis.js` to calculate the forces
  * Intended usage is shown in `index.html`
  * Calculation model is provided in `excel/beam-analysis.xlsx` directory.
  * You are free to use any library or framework to help you with the chart.
