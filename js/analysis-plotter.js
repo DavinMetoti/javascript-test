@@ -6,8 +6,6 @@ class AnalysisPlotter {
     plot(data) {
         const labels = data.map(point => point.x.toFixed(2));
         const values = data.map(point => point.y.toFixed(2));
-
-        console.log(labels);
         new Chart(this.ctx, {
             type: 'line',
             data: {
@@ -97,9 +95,6 @@ document.getElementById('calculate').addEventListener('click', function (e) {
             shearForceData.push(shearForceEquation(x));
         }
     }
-
-    console.log("Ini M = " + bendingMomentData[0].M);
-    console.log("Ini R = " + bendingMomentData[0].R1);
 
     plotter.deflection.plot(deflectionData);
     plotter.shearForce.plot(shearForceData);
