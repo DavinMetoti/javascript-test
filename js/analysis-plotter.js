@@ -7,6 +7,7 @@ class AnalysisPlotter {
         const labels = data.map(point => point.x.toFixed(2));
         const values = data.map(point => point.y.toFixed(2));
 
+        console.log(labels);
         new Chart(this.ctx, {
             type: 'line',
             data: {
@@ -81,11 +82,24 @@ document.getElementById('calculate').addEventListener('click', function (e) {
     var bendingMomentData = [];
     var shearForceData = [];
 
-    for (var x = 0; x <= beam.primarySpan; x += 0.1) {
-        deflectionData.push(deflectionEquation(x, j2));
-        bendingMomentData.push(bendingMomentEquation(x));
-        shearForceData.push(shearForceEquation(x));
+    if (condition == "simply-supported") {
+        var increment = beam.primarySpan / 10;
+        for (var x = 0; x <= beam.primarySpan; x += increment) {
+            deflectionData.push(deflectionEquation(x, j2));
+            bendingMomentData.push(bendingMomentEquation(x));
+            shearForceData.push(shearForceEquation(x));
+        }
+    } else {
+        var increment = (beam.primarySpan + beam.secondarySpan) / 10;
+        for (var x = 0; x <= beam.primarySpan + beam.secondarySpan; x += increment) {
+            deflectionData.push(deflectionEquation(x, j2));
+            bendingMomentData.push(bendingMomentEquation(x));
+            shearForceData.push(shearForceEquation(x));
+        }
     }
+
+    console.log("Ini M = " + bendingMomentData[0].M);
+    console.log("Ini R = " + bendingMomentData[0].R1);
 
     plotter.deflection.plot(deflectionData);
     plotter.shearForce.plot(shearForceData);

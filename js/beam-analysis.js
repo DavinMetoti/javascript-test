@@ -164,31 +164,27 @@ BeamAnalysis.analyzer.twoSpanUnequal = function () { };
 BeamAnalysis.analyzer.twoSpanUnequal.prototype = {
     getDeflectionEquation: function (beam, load) {
         return function (x, j2 = 2) {
-            if (x >= 0 && x <= beam.primarySpan + beam.secondarySpan) {
-                var w = load;
-                var L1 = beam.primarySpan;
-                var L2 = beam.secondarySpan;
-                var EI = beam.material.properties.EI;
-                var m = ((w * Math.pow(L2, 3)) + (w * Math.pow(L1, 3))) / (8 * (L1 + L2));
-                var R1 = ((m / L1) + ((w * L1) / 2));
-                var R3 = ((m / L2) + ((w * L2) / 2));
-                var R2 = ((w * L1) + (w * L2) - R1 - R3);
+            var w = load;
+            var L1 = beam.primarySpan;
+            var L2 = beam.secondarySpan;
+            var EI = beam.material.properties.EI;
+            var m = -((w * Math.pow(L2, 3)) + (w * Math.pow(L1, 3))) / (8 * (L1 + L2));
+            var R1 = (m / L1) + ((w * L1) * 0.5);
+            var R3 = ((m / L2) + ((w * L2) / 2));
+            var R2 = ((w * L1) + (w * L2) - R1 - R3);
 
-                var deflection;
+            var deflection;
 
-                if (x <= L1) {
-                    deflection = (x / (24 * (EI / Math.pow(1000, 3)))) * ((4 * R1 * Math.pow(x, 2)) - (w * Math.pow(x, 3)) + (w * Math.pow(L1, 3)) - (4 * R1 * Math.pow(L1, 2))) * 1000 * j2;
-                } else {
-                    var x2 = x - L1;
-                    deflection = ((((EI * x2) / 6) * (Math.pow(x2, 2) - Math.pow(L1, 2))) + (((EI * x2) / 6) * ((Math.pow(x2, 2)) - (3 * L1 * x2) + (3 * Math.pow(L1, 2)))) - ((EI * Math.pow(L1, 3)) / 6) - (((w * x2) / 24) * ((Math.pow(x2, 3)) - (Math.pow(L1, 3))))) / (EI / Math.pow(1000, 3)) * 1000 * j2;
-                }
-                return {
-                    x: x,
-                    y: deflection
-                };
+            if (x <= L1) {
+                deflection = (x / (24 * (EI / Math.pow(1000, 3)))) * ((4 * R1 * Math.pow(x, 2)) - (w * Math.pow(x, 3)) + (w * Math.pow(L1, 3)) - (4 * R1 * Math.pow(L1, 2))) * 1000 * j2;
             } else {
-                throw new Error('x is out of bounds');
+                var x2 = x - L1;
+                deflection = ((((EI * x2) / 6) * (Math.pow(x2, 2) - Math.pow(L1, 2))) + (((EI * x2) / 6) * ((Math.pow(x2, 2)) - (3 * L1 * x2) + (3 * Math.pow(L1, 2)))) - ((EI * Math.pow(L1, 3)) / 6) - (((w * x2) / 24) * ((Math.pow(x2, 3)) - (Math.pow(L1, 3))))) / (EI / Math.pow(1000, 3)) * 1000 * j2;
             }
+            return {
+                x: x,
+                y: deflection / 1000000
+            };
         };
     },
 
@@ -197,42 +193,46 @@ BeamAnalysis.analyzer.twoSpanUnequal.prototype = {
             var w = load;
             var L1 = beam.primarySpan;
             var L2 = beam.secondarySpan;
-            var m = ((w * Math.pow(L2, 3)) + (w * Math.pow(L1, 3))) / (8 * (L1 + L2));
-            var R1 = ((m / L1) + ((w * L1) / 2));
+            var totalLength = L1 + L2;
+
+            var m = -((w * Math.pow(L2, 3)) + (w * Math.pow(L1, 3))) / (8 * (L1 + L2));
+            var R1 = (m / L1) + ((w * L1) * 0.5);
             var R3 = ((m / L2) + ((w * L2) / 2));
             var R2 = ((w * L1) + (w * L2) - R1 - R3);
 
-            if (x < 0 || x > L1 + L2) {
-                throw new Error('x is out of bounds');
+            // Calculate bending moment
+            var bendingMoment;
+            if (x == 0 || x == totalLength) {
+                bendingMoment = 0;
+            } else if (x < L1) {
+                bendingMoment = -(R1 * x - 0.5 * w * Math.pow(x, 2));
+            } else if (x > L1) {
+                bendingMoment = -((R1 * x + R2 * (x - L1)) - (0.5 * w * (Math.pow(x, 2))));
+            } else {
+                bendingMoment = -(R1 * L1 - (0.5 * w * (Math.pow(L1, 2))));
+
             }
 
-            var bendingMoment;
-            if (x <= L1) {
-                bendingMoment = R1 * x - 0.5 * w * Math.pow(x, 2);
-            } else {
-                bendingMoment = R1 * x + R2 * (x - L1) - 0.5 * w * Math.pow(x, 2);
-            }
             return {
                 x: x,
+                R1: R1,
+                M: m,
                 y: bendingMoment
             };
-        }
+        };
     },
+
 
     getShearForceEquation: function (beam, load) {
         return function (x) {
-            if (x < 0 || x > beam.primarySpan + beam.secondarySpan) {
-                throw new Error('x is out of bounds');
-            }
-
             var w = load;
             var L1 = beam.primarySpan;
             var L2 = beam.secondarySpan;
 
-            var m = (w * Math.pow(L2, 3) + w * Math.pow(L1, 3)) / (8 * (L1 + L2));
-            var R1 = m / L1 + w * L1 / 2;
-            var R3 = m / L2 + w * L2 / 2;
-            var R2 = w * L1 + w * L2 - R1 - R3;
+            var m = -((w * Math.pow(L2, 3)) + (w * Math.pow(L1, 3))) / (8 * (L1 + L2));
+            var R1 = (m / L1) + ((w * L1) * 0.5);
+            var R3 = ((m / L2) + ((w * L2) / 2));
+            var R2 = ((w * L1) + (w * L2) - R1 - R3);
 
             var shearForce;
             if (x <= L1) {
