@@ -106,7 +106,7 @@ BeamAnalysis.analyzer.simplySupported = function () { };
 BeamAnalysis.analyzer.simplySupported.prototype = {
     getDeflectionEquation: function (beam, load) {
         return function (x, j2 = 2) {
-            if (x >= 0 && x <= beam.primarySpan) {
+            if (x >= 0 || x <= beam.primarySpan) {
                 var w = load;
                 var L = beam.primarySpan;
                 var EI = beam.material.properties.EI;
@@ -163,30 +163,43 @@ BeamAnalysis.analyzer.twoSpanUnequal = function () { };
 
 BeamAnalysis.analyzer.twoSpanUnequal.prototype = {
     getDeflectionEquation: function (beam, load) {
-        return function (x, j2 = 2) {
+        return function (x, j2) {
             var w = load;
             var L1 = beam.primarySpan;
             var L2 = beam.secondarySpan;
             var EI = beam.material.properties.EI;
+
             var m = -((w * Math.pow(L2, 3)) + (w * Math.pow(L1, 3))) / (8 * (L1 + L2));
-            var R1 = (m / L1) + ((w * L1) * 0.5);
-            var R3 = ((m / L2) + ((w * L2) / 2));
-            var R2 = ((w * L1) + (w * L2) - R1 - R3);
+            var R1 = (m / L1) + (w * L1 * 0.5);
+            var R3 = (m / L2) + (w * L2 * 0.5);
+            var R2 = (w * (L1 + L2)) - R1 - R3;
 
             var deflection;
 
+            var EI_kNm2 = EI / Math.pow(1000, 4);
+
             if (x <= L1) {
-                deflection = (x / (24 * (EI / Math.pow(1000, 3)))) * ((4 * R1 * Math.pow(x, 2)) - (w * Math.pow(x, 3)) + (w * Math.pow(L1, 3)) - (4 * R1 * Math.pow(L1, 2))) * 1000 * j2;
+                deflection = ((x / (24 * EI_kNm2)) * (
+                    (4 * R1 * Math.pow(x, 2)) -
+                    (w * Math.pow(x, 3)) +
+                    (w * Math.pow(L1, 3)) -
+                    (4 * R1 * Math.pow(L1, 2))
+                ) * 1000 * j2) * 1000;
             } else {
-                var x2 = x - L1;
-                deflection = ((((EI * x2) / 6) * (Math.pow(x2, 2) - Math.pow(L1, 2))) + (((EI * x2) / 6) * ((Math.pow(x2, 2)) - (3 * L1 * x2) + (3 * Math.pow(L1, 2)))) - ((EI * Math.pow(L1, 3)) / 6) - (((w * x2) / 24) * ((Math.pow(x2, 3)) - (Math.pow(L1, 3))))) / (EI / Math.pow(1000, 3)) * 1000 * j2;
+                deflection = (((R1 * x / 6) * (Math.pow(x, 2) - Math.pow(L1, 2))) +
+                    ((R2 * x / 6) * (Math.pow(x, 2) - (3 * L1 * x) + 3 * Math.pow(L1, 2))) -
+                    (R2 * Math.pow(L1, 3) / 6) -
+                    ((w * x / 24) * (Math.pow(x, 3) - Math.pow(L1, 3)))) / EI_kNm2 * 1000 * j2;
             }
+
             return {
                 x: x,
-                y: deflection / 1000000
+                EI: EI_kNm2,
+                y: deflection / 1000000  // Convert deflection to meters
             };
         };
     },
+
 
     getBendingMomentEquation: function (beam, load) {
         return function (x) {

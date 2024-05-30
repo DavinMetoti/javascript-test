@@ -6,6 +6,7 @@ class AnalysisPlotter {
     plot(data) {
         const labels = data.map(point => point.x.toFixed(2));
         const values = data.map(point => point.y.toFixed(2));
+        console.log(labels);
         new Chart(this.ctx, {
             type: 'line',
             data: {
@@ -15,7 +16,7 @@ class AnalysisPlotter {
                     data: values,
                     borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 1,
-                    fill: false
+                    fill: true
                 }]
             },
             options: {
@@ -89,7 +90,7 @@ document.getElementById('calculate').addEventListener('click', function (e) {
         }
     } else {
         var increment = (beam.primarySpan + beam.secondarySpan) / 10;
-        for (var x = 0; x <= beam.primarySpan + beam.secondarySpan; x += increment) {
+        for (var x = 0; x < beam.primarySpan + beam.secondarySpan + 1; x += increment) {
             deflectionData.push(deflectionEquation(x, j2));
             bendingMomentData.push(bendingMomentEquation(x));
             shearForceData.push(shearForceEquation(x));
